@@ -1,0 +1,1296 @@
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Bloom Finance V2.6</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Outfit", "sans-serif"] },
+            colors: {
+              brand: {
+                50: "#fff1f2",
+                100: "#ffe4e6",
+                200: "#fecdd3",
+                300: "#fda4af",
+                400: "#fb7185",
+                500: "#f43f5e",
+                600: "#e11d48",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: contain;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .snap-x-mandatory {
+        scroll-snap-type: x mandatory;
+      }
+      .snap-center {
+        scroll-snap-align: center;
+      }
+      .card-hover:active {
+        transform: scale(0.97);
+        transition: transform 0.2s;
+      }
+
+      /* Animación suave entre pestañas */
+      .tab-content {
+        transition: opacity 0.3s ease;
+      }
+      .hidden-tab {
+        display: none !important;
+        opacity: 0;
+      }
+      .safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    </style>
+  </head>
+  <body
+    class="touch-manipulation select-none text-slate-800 dark:text-slate-100 min-h-screen flex flex-col items-center justify-center bg-[#fdf2f8] dark:bg-slate-950 transition-colors duration-300"
+  >
+    <div
+      class="w-full h-[100dvh] md:h-[90vh] md:max-w-lg md:rounded-[2.5rem] bg-white dark:bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col md:border-[8px] md:border-white dark:md:border-slate-800"
+    >
+      <!-- --- PESTAÑA PRINCIPAL (HOME) --- -->
+      <div id="tab-home" class="flex flex-col h-full overflow-hidden">
+        <!-- Header -->
+        <header
+          class="pt-8 pb-4 px-6 flex justify-between items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20"
+        >
+          <div>
+            <h2
+              class="text-xs text-brand-400 font-bold uppercase tracking-widest"
+            >
+              Hola, <span id="userNameDisplay">Bloomer</span>
+            </h2>
+            <h1
+              class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight"
+            >
+              Mi Espacio
+            </h1>
+          </div>
+          <div class="flex gap-3">
+            <button
+              onclick="openBudgetModal()"
+              class="h-10 w-10 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center"
+            >
+              <i class="fa-solid fa-sliders"></i>
+            </button>
+            <div
+              class="h-10 w-10 rounded-full bg-brand-100 flex items-center justify-center overflow-hidden border-2 border-brand-200"
+            >
+              <img
+                id="userAvatar"
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                alt="Avatar"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </header>
+
+        <!-- Main Content Scrollable -->
+        <main
+          class="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-8 pb-32"
+        >
+          <!-- Balance Card -->
+          <div
+            class="glass-panel rounded-3xl p-6 bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-xl relative overflow-hidden"
+          >
+            <div class="relative z-10">
+              <div class="flex justify-between items-end mb-2">
+                <p class="text-brand-100 text-sm font-medium">Disponible</p>
+                <span
+                  class="text-xs bg-white/20 px-2 py-1 rounded-lg"
+                  id="budgetPercentBadge"
+                  >0% Gastado</span
+                >
+              </div>
+              <h2
+                class="text-4xl font-bold mb-6 tracking-tight"
+                id="displayBalance"
+              >
+                $0.00
+              </h2>
+
+              <div class="mb-4">
+                <div class="flex justify-between text-xs text-brand-50 mb-1">
+                  <span>Gastado: <span id="spentDisplay">$0</span></span>
+                  <span>Límite: <span id="limitDisplay">$2000</span></span>
+                </div>
+                <div
+                  class="w-full bg-black/20 rounded-full h-2 overflow-hidden"
+                >
+                  <div
+                    id="budgetBar"
+                    class="bg-white h-full rounded-full transition-all duration-1000"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <div
+                  class="flex-1 bg-white/10 rounded-2xl p-3 border border-white/5 text-center"
+                >
+                  <p class="text-[10px] uppercase font-bold text-brand-100">
+                    Ingresos
+                  </p>
+                  <p class="font-bold text-sm" id="totalIncome">$0.00</p>
+                </div>
+                <div
+                  class="flex-1 bg-white/10 rounded-2xl p-3 border border-white/5 text-center"
+                >
+                  <p class="text-[10px] uppercase font-bold text-brand-100">
+                    Gastos
+                  </p>
+                  <p class="font-bold text-sm" id="totalExpense">$0.00</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Savings Goals -->
+          <div>
+            <div class="flex justify-between items-center mb-4 px-1">
+              <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200">
+                Mis Metas
+              </h3>
+              <button
+                onclick="openGoalModal()"
+                class="text-brand-500 text-sm font-bold bg-brand-50 dark:bg-brand-500/10 px-3 py-1 rounded-lg hover:bg-brand-100 transition-colors"
+              >
+                <i class="fa-solid fa-plus mr-1"></i> Nueva
+              </button>
+            </div>
+
+            <div
+              class="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x-mandatory"
+              id="goalsContainer"
+            >
+              <div
+                id="noGoalsState"
+                class="min-w-full flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl text-slate-400"
+              >
+                <i class="fa-solid fa-piggy-bank text-3xl mb-2"></i>
+                <p class="text-sm">Añade una meta para empezar</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subscriptions Section (NUEVO) -->
+          <div>
+            <div class="flex justify-between items-center mb-4 px-1">
+              <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200">
+                Suscripciones
+              </h3>
+              <button
+                onclick="openSubModal()"
+                class="text-brand-500 text-sm font-bold bg-brand-50 dark:bg-brand-500/10 px-3 py-1 rounded-lg hover:bg-brand-100 transition-colors"
+              >
+                <i class="fa-solid fa-plus mr-1"></i> Añadir
+              </button>
+            </div>
+
+            <div
+              class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-700"
+            >
+              <div
+                class="flex justify-between items-center mb-4 pb-4 border-b border-slate-50 dark:border-slate-700"
+              >
+                <span
+                  class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Costo Mensual</span
+                >
+                <span
+                  class="text-xl font-bold text-slate-800 dark:text-white"
+                  id="subsTotal"
+                  >$0.00</span
+                >
+              </div>
+              <div class="space-y-3" id="subsList">
+                <p
+                  class="text-center text-sm text-slate-400 py-2 italic"
+                  id="noSubsText"
+                >
+                  Sin suscripciones activas
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transactions -->
+          <div>
+            <h3
+              class="font-bold text-lg text-slate-700 dark:text-slate-200 mb-4 px-1"
+            >
+              Movimientos Recientes
+            </h3>
+            <div id="transactionList" class="space-y-3"></div>
+          </div>
+        </main>
+      </div>
+
+      <!-- --- PESTAÑA DE AJUSTES (SETTINGS) --- -->
+      <div
+        id="tab-settings"
+        class="flex flex-col h-full overflow-hidden hidden-tab"
+      >
+        <header
+          class="pt-8 pb-4 px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20"
+        >
+          <h2
+            class="text-xs text-brand-400 font-bold uppercase tracking-widest"
+          >
+            Configuración
+          </h2>
+          <h1
+            class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight"
+          >
+            Ajustes
+          </h1>
+        </header>
+
+        <main
+          class="flex-1 overflow-y-auto hide-scrollbar px-6 space-y-6 pb-32"
+        >
+          <!-- Perfil -->
+          <div
+            class="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-700"
+          >
+            <h3
+              class="text-xs font-bold text-brand-500 uppercase tracking-widest mb-4"
+            >
+              Perfil
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label
+                  class="text-xs font-bold text-slate-400 uppercase mb-1 block"
+                  >Nombre de usuario</label
+                >
+                <input
+                  type="text"
+                  id="settingUserName"
+                  onchange="updateProfile()"
+                  class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none focus:ring-2 focus:ring-brand-200 transition-all text-slate-800 dark:text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Preferencias -->
+          <div
+            class="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-700"
+          >
+            <h3
+              class="text-xs font-bold text-brand-500 uppercase tracking-widest mb-4"
+            >
+              Preferencias
+            </h3>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"
+                >
+                  <i
+                    class="fa-solid fa-moon text-slate-600 dark:text-slate-300"
+                  ></i>
+                </div>
+                <div>
+                  <p class="text-sm font-bold">Modo Oscuro</p>
+                  <p class="text-[10px] text-slate-400">
+                    Reduce la fatiga visual
+                  </p>
+                </div>
+              </div>
+              <button
+                onclick="toggleDarkMode()"
+                id="darkModeToggle"
+                class="w-12 h-6 bg-slate-300 dark:bg-brand-500 rounded-full relative transition-colors"
+              >
+                <div
+                  class="absolute w-4 h-4 bg-white rounded-full top-1 left-1 dark:left-7 transition-all"
+                ></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Datos y Peligro -->
+          <div
+            class="bg-red-50 dark:bg-red-900/10 rounded-3xl p-6 border border-red-100 dark:border-red-900/20"
+          >
+            <h3
+              class="text-xs font-bold text-red-500 uppercase tracking-widest mb-4"
+            >
+              Zona de Peligro
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Estas acciones borrarán todos tus datos locales de forma
+              permanente.
+            </p>
+            <button
+              onclick="factoryReset()"
+              class="w-full bg-white dark:bg-slate-900 text-red-500 font-bold py-3 rounded-xl border border-red-200 dark:border-red-900/40 shadow-sm active:scale-95 transition-all"
+            >
+              Restablecer de Fábrica
+            </button>
+          </div>
+        </main>
+      </div>
+
+      <!-- --- NAVEGACIÓN INFERIOR --- -->
+      <nav
+        class="absolute bottom-0 left-0 right-0 h-20 safe-bottom bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 px-10 flex justify-between items-center z-40"
+      >
+        <button
+          onclick="switchTab('home')"
+          id="nav-home"
+          class="flex flex-col items-center gap-1 text-brand-500"
+        >
+          <i class="fa-solid fa-house-chimney text-xl"></i>
+          <span class="text-[10px] font-bold">Inicio</span>
+        </button>
+        <div class="w-12"></div>
+        <!-- Espacio para el FAB central -->
+        <button
+          onclick="switchTab('settings')"
+          id="nav-settings"
+          class="flex flex-col items-center gap-1 text-slate-400"
+        >
+          <i class="fa-solid fa-gear text-xl"></i>
+          <span class="text-[10px] font-bold">Ajustes</span>
+        </button>
+      </nav>
+
+      <!-- FAB (Botón Añadir Central) -->
+      <div
+        class="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 safe-bottom"
+      >
+        <button
+          onclick="openTransactionModal()"
+          class="w-14 h-14 bg-brand-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:scale-110 active:scale-90 transition-all border-4 border-white dark:border-slate-900"
+        >
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+
+      <!-- ================= MODALES ================= -->
+
+      <!-- Transaction Modal -->
+      <div id="transactionModal" class="fixed inset-0 z-[60] hidden">
+        <div
+          class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          onclick="closeTransactionModal()"
+        ></div>
+        <div
+          id="transactionModalContent"
+          class="absolute bottom-0 left-0 right-0 max-h-[90dvh] overflow-y-auto bg-white dark:bg-slate-900 rounded-t-[2.5rem] transform translate-y-full transition-transform duration-300 md:relative md:mx-auto md:mt-[5vh] md:max-w-md md:rounded-[2.5rem]"
+        >
+          <div
+            class="w-full py-4 cursor-pointer"
+            onclick="closeTransactionModal()"
+          >
+            <div
+              class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto"
+            ></div>
+          </div>
+          <form
+            onsubmit="addTransaction(event)"
+            class="px-8 pb-10 flex flex-col"
+          >
+            <h3 class="text-2xl font-bold mb-6 dark:text-white">
+              Nuevo Registro
+            </h3>
+            <div
+              class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-6 relative h-12"
+            >
+              <div
+                id="toggleBg"
+                class="absolute w-1/2 h-[calc(100%-8px)] top-1 left-1 bg-white dark:bg-slate-700 rounded-xl shadow-sm transition-all duration-300"
+              ></div>
+              <button
+                type="button"
+                onclick="setTransactionType('expense')"
+                class="flex-1 z-10 font-bold dark:text-white"
+                id="btnExpense"
+              >
+                Gasto
+              </button>
+              <button
+                type="button"
+                onclick="setTransactionType('income')"
+                class="flex-1 z-10 font-bold text-slate-400"
+                id="btnIncome"
+              >
+                Ingreso
+              </button>
+            </div>
+            <div class="mb-6">
+              <label class="text-xs font-bold text-slate-400 uppercase"
+                >Monto</label
+              >
+              <input
+                type="number"
+                id="amount"
+                step="0.01"
+                required
+                class="w-full border-b-2 border-slate-200 dark:border-slate-700 bg-transparent py-2 text-4xl font-bold focus:outline-none focus:border-brand-500 dark:text-white"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="mb-6">
+              <label class="text-xs font-bold text-slate-400 uppercase"
+                >Concepto</label
+              >
+              <input
+                type="text"
+                id="description"
+                required
+                class="w-full bg-slate-50 dark:bg-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-brand-200 outline-none dark:text-white"
+                placeholder="¿Qué fue?"
+              />
+            </div>
+            <div class="mb-8">
+              <label
+                class="text-xs font-bold text-slate-400 uppercase mb-4 block"
+                >Categoría</label
+              >
+              <div class="grid grid-cols-4 gap-3" id="categoryGrid"></div>
+              <input type="hidden" id="selectedCategory" required />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-brand-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg"
+            >
+              Guardar
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Add/Remove Money to Goal Modal -->
+      <div
+        id="addMoneyModal"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center p-6"
+      >
+        <div
+          class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          onclick="closeAddMoneyModal()"
+        ></div>
+        <div
+          id="addMoneyContent"
+          class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl transform scale-90 opacity-0 transition-all duration-300"
+        >
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold dark:text-white" id="goalTitleModal">
+              Meta
+            </h3>
+            <button
+              onclick="deleteGoalPrompt()"
+              class="text-slate-300 hover:text-red-500 transition-colors"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+          <p class="text-slate-400 text-sm mb-6">
+            Gestiona tus ahorros para esta meta.
+          </p>
+          <form onsubmit="confirmGoalAction(event, 'add')">
+            <input type="hidden" id="activeGoalId" />
+            <div class="mb-6">
+              <input
+                type="number"
+                id="moneyToHandle"
+                step="0.01"
+                required
+                autofocus
+                class="w-full text-center text-4xl font-bold text-slate-800 dark:text-white border-b-2 border-slate-100 dark:border-slate-800 bg-transparent focus:border-brand-500 outline-none py-2"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="flex gap-3">
+              <button
+                type="button"
+                onclick="confirmGoalAction(event, 'remove')"
+                class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                Retirar
+              </button>
+              <button
+                type="submit"
+                class="flex-[2] bg-brand-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-brand-500/30"
+              >
+                Añadir Dinero
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Create Goal Modal -->
+      <div
+        id="goalModal"
+        class="fixed inset-0 z-[60] hidden flex items-end md:items-center justify-center p-4"
+      >
+        <div
+          class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+          onclick="closeGoalModal()"
+        ></div>
+        <div
+          id="goalModalContent"
+          class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform translate-y-full transition-transform duration-300"
+        >
+          <h3 class="text-xl font-bold mb-4 dark:text-white">Nueva Meta</h3>
+          <form onsubmit="saveNewGoal(event)">
+            <div class="space-y-4 mb-6">
+              <input
+                type="text"
+                id="goalName"
+                required
+                placeholder="Nombre: Ej. Coche"
+                class="w-full border-b border-slate-200 dark:border-slate-700 bg-transparent py-3 outline-none focus:border-brand-500 dark:text-white"
+              />
+              <input
+                type="number"
+                id="goalTarget"
+                required
+                placeholder="Meta: Ej. 5000"
+                class="w-full border-b border-slate-200 dark:border-slate-700 bg-transparent py-3 outline-none focus:border-brand-500 dark:text-white"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-brand-500 text-white font-bold py-4 rounded-2xl"
+            >
+              Crear Meta
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Subscriptions Modal (NUEVO) -->
+      <div
+        id="subModal"
+        class="fixed inset-0 z-[60] hidden flex items-end md:items-center justify-center p-4"
+      >
+        <div
+          class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+          onclick="closeSubModal()"
+        ></div>
+        <div
+          id="subModalContent"
+          class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform translate-y-full transition-transform duration-300"
+        >
+          <h3 class="text-xl font-bold mb-4 dark:text-white">
+            Nueva Suscripción
+          </h3>
+          <form onsubmit="saveNewSub(event)">
+            <div class="space-y-4 mb-6">
+              <input
+                type="text"
+                id="subName"
+                required
+                placeholder="Servicio: Ej. Netflix"
+                class="w-full border-b border-slate-200 dark:border-slate-700 bg-transparent py-3 outline-none focus:border-brand-500 dark:text-white"
+              />
+              <input
+                type="number"
+                id="subCost"
+                step="0.01"
+                required
+                placeholder="Costo mensual: 15.00"
+                class="w-full border-b border-slate-200 dark:border-slate-700 bg-transparent py-3 outline-none focus:border-brand-500 dark:text-white"
+              />
+              <div class="flex items-center gap-3">
+                <label class="text-sm text-slate-400">Día de pago:</label>
+                <select
+                  id="subDay"
+                  class="flex-1 border-b border-slate-200 dark:border-slate-700 bg-transparent py-3 outline-none focus:border-brand-500 dark:text-white"
+                >
+                  <!-- Generado por JS -->
+                </select>
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-brand-500 text-white font-bold py-4 rounded-2xl"
+            >
+              Añadir Suscripción
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Budget Modal -->
+      <div
+        id="budgetModal"
+        class="fixed inset-0 z-[60] hidden flex items-end md:items-center justify-center p-4"
+      >
+        <div
+          class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+          onclick="closeBudgetModal()"
+        ></div>
+        <div
+          id="budgetModalContent"
+          class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform translate-y-full transition-transform duration-300"
+        >
+          <h3 class="text-xl font-bold mb-4 dark:text-white">Límite Mensual</h3>
+          <form onsubmit="saveNewBudget(event)">
+            <input
+              type="number"
+              id="budgetInput"
+              required
+              class="w-full border-b border-slate-200 dark:border-slate-700 bg-transparent py-3 text-3xl font-bold outline-none focus:border-brand-500 dark:text-white"
+            />
+            <button
+              type="submit"
+              class="w-full bg-slate-800 dark:bg-brand-600 text-white font-bold py-4 rounded-2xl mt-6"
+            >
+              Actualizar Límite
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let appData = JSON.parse(localStorage.getItem("bloomFinanceV2.6")) || {
+        userName: "Bloomer",
+        darkMode: false,
+        transactions: [],
+        budgetLimit: 2000,
+        goals: [],
+        subscriptions: [],
+      };
+
+      let currentType = "expense";
+      const categories = {
+        expense: [
+          {
+            id: "food",
+            icon: "fa-utensils",
+            label: "Comida",
+            color: "#fb7185",
+          },
+          {
+            id: "transport",
+            icon: "fa-bus",
+            label: "Transp.",
+            color: "#38bdf8",
+          },
+          {
+            id: "shopping",
+            icon: "fa-bag-shopping",
+            label: "Compras",
+            color: "#c084fc",
+          },
+          {
+            id: "entertainment",
+            icon: "fa-ticket",
+            label: "Ocio",
+            color: "#facc15",
+          },
+          {
+            id: "subs",
+            icon: "fa-rotate",
+            label: "Suscrip.",
+            color: "#f43f5e",
+          },
+        ],
+        income: [
+          {
+            id: "salary",
+            icon: "fa-briefcase",
+            label: "Sueldo",
+            color: "#34d399",
+          },
+          { id: "extra", icon: "fa-laptop", label: "Extra", color: "#60a5fa" },
+        ],
+      };
+
+      // Mapeo de iconos simples
+      const subIcons = {
+        netflix: "fa-film",
+        spotify: "fa-music",
+        apple: "fa-apple-whole",
+        gym: "fa-dumbbell",
+        youtube: "fa-youtube",
+        adobe: "fa-pen-nib",
+        amazon: "fa-box-open",
+        internet: "fa-wifi",
+        icloud: "fa-cloud",
+      };
+
+      function save() {
+        localStorage.setItem("bloomFinanceV2.6", JSON.stringify(appData));
+      }
+
+      function checkSubscriptions() {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        let changed = false;
+
+        // Migración simple si no existe array
+        if (!appData.subscriptions) appData.subscriptions = [];
+
+        appData.subscriptions.forEach((sub) => {
+          const lastPaidDate = sub.lastPaid ? new Date(sub.lastPaid) : null;
+          const alreadyPaidThisMonth =
+            lastPaidDate &&
+            lastPaidDate.getMonth() === currentMonth &&
+            lastPaidDate.getFullYear() === currentYear;
+
+          // Si no se ha pagado este mes Y hoy es igual o mayor al día de pago
+          if (!alreadyPaidThisMonth && today.getDate() >= sub.day) {
+            appData.transactions.unshift({
+              id: Date.now() + Math.random(),
+              type: "expense",
+              amount: sub.cost,
+              description: `Suscripción: ${sub.name}`,
+              category: {
+                id: "subs",
+                icon: "fa-rotate",
+                label: "Suscrip.",
+                color: "#f43f5e",
+              },
+              date: new Date(),
+            });
+            sub.lastPaid = new Date();
+            changed = true;
+          }
+        });
+
+        if (changed) {
+          save();
+          renderApp();
+        }
+      }
+
+      function switchTab(tab) {
+        const homeTab = document.getElementById("tab-home");
+        const settingsTab = document.getElementById("tab-settings");
+        const navHome = document.getElementById("nav-home");
+        const navSettings = document.getElementById("nav-settings");
+
+        if (tab === "home") {
+          homeTab.classList.remove("hidden-tab");
+          settingsTab.classList.add("hidden-tab");
+          navHome.classList.replace("text-slate-400", "text-brand-500");
+          navSettings.classList.replace("text-brand-500", "text-slate-400");
+        } else {
+          homeTab.classList.add("hidden-tab");
+          settingsTab.classList.remove("hidden-tab");
+          navSettings.classList.replace("text-slate-400", "text-brand-500");
+          navHome.classList.replace("text-brand-500", "text-slate-400");
+          document.getElementById("settingUserName").value = appData.userName;
+        }
+      }
+
+      function updateProfile() {
+        appData.userName =
+          document.getElementById("settingUserName").value || "Bloomer";
+        document.getElementById("userNameDisplay").innerText = appData.userName;
+        document.getElementById(
+          "userAvatar"
+        ).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${appData.userName}`;
+        save();
+      }
+
+      function toggleDarkMode() {
+        appData.darkMode = !appData.darkMode;
+        applyTheme();
+        save();
+      }
+
+      function applyTheme() {
+        if (appData.darkMode) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      }
+
+      function factoryReset() {
+        if (
+          confirm("¿ESTÁS SEGURO? Se borrarán todos tus datos permanentemente.")
+        ) {
+          localStorage.removeItem("bloomFinanceV2.6");
+          location.reload();
+        }
+      }
+
+      function openBudgetModal() {
+        document.getElementById("budgetInput").value = appData.budgetLimit;
+        document.getElementById("budgetModal").classList.remove("hidden");
+        setTimeout(
+          () =>
+            document
+              .getElementById("budgetModalContent")
+              .classList.remove("translate-y-full"),
+          10
+        );
+      }
+      function closeBudgetModal() {
+        document
+          .getElementById("budgetModalContent")
+          .classList.add("translate-y-full");
+        setTimeout(
+          () => document.getElementById("budgetModal").classList.add("hidden"),
+          300
+        );
+      }
+      function saveNewBudget(e) {
+        e.preventDefault();
+        appData.budgetLimit = parseFloat(
+          document.getElementById("budgetInput").value
+        );
+        save();
+        renderApp();
+        closeBudgetModal();
+      }
+
+      function openGoalModal() {
+        document.getElementById("goalModal").classList.remove("hidden");
+        setTimeout(
+          () =>
+            document
+              .getElementById("goalModalContent")
+              .classList.remove("translate-y-full"),
+          10
+        );
+      }
+      function closeGoalModal() {
+        document
+          .getElementById("goalModalContent")
+          .classList.add("translate-y-full");
+        setTimeout(
+          () => document.getElementById("goalModal").classList.add("hidden"),
+          300
+        );
+      }
+      function saveNewGoal(e) {
+        e.preventDefault();
+        appData.goals.push({
+          id: Date.now(),
+          name: document.getElementById("goalName").value,
+          target: parseFloat(document.getElementById("goalTarget").value),
+          saved: 0,
+          color: ["#fb7185", "#38bdf8", "#c084fc", "#facc15"][
+            appData.goals.length % 4
+          ],
+        });
+        save();
+        renderApp();
+        closeGoalModal();
+        e.target.reset();
+      }
+
+      // --- SUSCRIPCIONES ---
+      function openSubModal() {
+        const select = document.getElementById("subDay");
+        select.innerHTML = "";
+        for (let i = 1; i <= 31; i++) {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.text = `Día ${i}`;
+          opt.className =
+            "bg-white text-slate-800 dark:bg-slate-900 dark:text-white"; // Fix dark mode select
+          select.appendChild(opt);
+        }
+        document.getElementById("subModal").classList.remove("hidden");
+        setTimeout(
+          () =>
+            document
+              .getElementById("subModalContent")
+              .classList.remove("translate-y-full"),
+          10
+        );
+      }
+      function closeSubModal() {
+        document
+          .getElementById("subModalContent")
+          .classList.add("translate-y-full");
+        setTimeout(
+          () => document.getElementById("subModal").classList.add("hidden"),
+          300
+        );
+      }
+      function saveNewSub(e) {
+        e.preventDefault();
+        const name = document.getElementById("subName").value;
+        // Detectar icono
+        let icon = "fa-bolt";
+        Object.keys(subIcons).forEach((key) => {
+          if (name.toLowerCase().includes(key)) icon = subIcons[key];
+        });
+
+        appData.subscriptions.push({
+          id: Date.now(),
+          name: name,
+          cost: parseFloat(document.getElementById("subCost").value),
+          day: parseInt(document.getElementById("subDay").value),
+          icon: icon,
+          lastPaid: null, // Nunca pagado al crear
+        });
+        save();
+        renderApp();
+        checkSubscriptions();
+        closeSubModal();
+        e.target.reset();
+      }
+      function deleteSub(id) {
+        if (confirm("¿Eliminar suscripción?")) {
+          appData.subscriptions = appData.subscriptions.filter(
+            (s) => s.id !== id
+          );
+          save();
+          renderApp();
+        }
+      }
+
+      function openAddMoney(id) {
+        const goal = appData.goals.find((g) => g.id === id);
+        if (!goal) return;
+        document.getElementById("activeGoalId").value = id;
+        document.getElementById("goalTitleModal").innerText = goal.name;
+        document.getElementById("moneyToHandle").value = "";
+        const modal = document.getElementById("addMoneyModal");
+        const content = document.getElementById("addMoneyContent");
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+          content.classList.remove("scale-90", "opacity-0");
+          content.classList.add("scale-100", "opacity-100");
+        }, 10);
+      }
+      function closeAddMoneyModal() {
+        const content = document.getElementById("addMoneyContent");
+        content.classList.replace("scale-100", "scale-90");
+        content.classList.replace("opacity-100", "opacity-0");
+        setTimeout(
+          () =>
+            document.getElementById("addMoneyModal").classList.add("hidden"),
+          300
+        );
+      }
+
+      function confirmGoalAction(e, actionType) {
+        if (e) e.preventDefault();
+        const id = parseInt(document.getElementById("activeGoalId").value);
+        const amount = parseFloat(
+          document.getElementById("moneyToHandle").value
+        );
+        const goal = appData.goals.find((g) => g.id === id);
+        if (!goal || isNaN(amount) || amount <= 0) return;
+        if (actionType === "add") {
+          goal.saved += amount;
+          appData.transactions.unshift({
+            id: Date.now(),
+            type: "expense",
+            amount: amount,
+            description: `Ahorro: ${goal.name}`,
+            category: {
+              id: "saving",
+              icon: "fa-piggy-bank",
+              label: "Ahorro",
+              color: "#f43f5e",
+            },
+            date: new Date(),
+          });
+        } else if (actionType === "remove") {
+          if (amount > goal.saved) return alert("Fondos insuficientes.");
+          goal.saved -= amount;
+          appData.transactions.unshift({
+            id: Date.now(),
+            type: "income",
+            amount: amount,
+            description: `Retiro: ${goal.name}`,
+            category: {
+              id: "saving-return",
+              icon: "fa-hand-holding-dollar",
+              label: "Retiro",
+              color: "#34d399",
+            },
+            date: new Date(),
+          });
+        }
+        save();
+        renderApp();
+        closeAddMoneyModal();
+      }
+
+      function deleteGoalPrompt() {
+        const id = parseInt(document.getElementById("activeGoalId").value);
+        if (confirm("¿Eliminar esta meta?")) {
+          appData.goals = appData.goals.filter((g) => g.id !== id);
+          save();
+          renderApp();
+          closeAddMoneyModal();
+        }
+      }
+
+      function openTransactionModal() {
+        document.getElementById("transactionModal").classList.remove("hidden");
+        setTimeout(
+          () =>
+            document
+              .getElementById("transactionModalContent")
+              .classList.remove("translate-y-full"),
+          10
+        );
+      }
+      function closeTransactionModal() {
+        document
+          .getElementById("transactionModalContent")
+          .classList.add("translate-y-full");
+        setTimeout(
+          () =>
+            document.getElementById("transactionModal").classList.add("hidden"),
+          300
+        );
+      }
+      function setTransactionType(type) {
+        currentType = type;
+        const toggle = document.getElementById("toggleBg");
+        toggle.style.transform =
+          type === "income" ? "translateX(100%)" : "translateX(0)";
+        document
+          .getElementById("btnExpense")
+          .classList.toggle("text-slate-400", type === "income");
+        document
+          .getElementById("btnIncome")
+          .classList.toggle("text-slate-400", type === "expense");
+        renderCategories();
+      }
+      function renderCategories() {
+        const grid = document.getElementById("categoryGrid");
+        grid.innerHTML = "";
+        categories[currentType].forEach((cat, i) => {
+          const btn = document.createElement("div");
+          btn.className = `cursor-pointer flex flex-col items-center p-2 rounded-2xl border border-slate-100 dark:border-slate-800 cat-btn transition-all`;
+          btn.onclick = () => selectCategory(cat.id, btn);
+          btn.innerHTML = `<div class="w-10 h-10 rounded-full flex items-center justify-center text-white mb-1 shadow-sm" style="background-color: ${cat.color}"><i class="fa-solid ${cat.icon} text-sm"></i></div><span class="text-[10px] font-bold text-slate-400 text-center">${cat.label}</span>`;
+          grid.appendChild(btn);
+          if (i === 0) selectCategory(cat.id, btn);
+        });
+      }
+      function selectCategory(id, el) {
+        document.getElementById("selectedCategory").value = id;
+        document
+          .querySelectorAll(".cat-btn")
+          .forEach((b) =>
+            b.classList.remove(
+              "bg-brand-50",
+              "dark:bg-brand-500/10",
+              "border-brand-200",
+              "scale-105"
+            )
+          );
+        el.classList.add(
+          "bg-brand-50",
+          "dark:bg-brand-500/10",
+          "border-brand-200",
+          "scale-105"
+        );
+      }
+      function addTransaction(e) {
+        e.preventDefault();
+        const catId = document.getElementById("selectedCategory").value;
+        appData.transactions.unshift({
+          id: Date.now(),
+          type: currentType,
+          amount: parseFloat(document.getElementById("amount").value),
+          description: document.getElementById("description").value,
+          category: categories[currentType].find((c) => c.id === catId),
+          date: new Date(),
+        });
+        save();
+        renderApp();
+        closeTransactionModal();
+        e.target.reset();
+      }
+
+      function renderApp() {
+        document.getElementById("userNameDisplay").innerText = appData.userName;
+        document.getElementById(
+          "userAvatar"
+        ).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${appData.userName}`;
+
+        let inc = 0,
+          exp = 0;
+        appData.transactions.forEach((t) =>
+          t.type === "income" ? (inc += t.amount) : (exp += t.amount)
+        );
+        const balance = inc - exp;
+        document.getElementById(
+          "displayBalance"
+        ).innerText = `$${balance.toFixed(2)}`;
+        document.getElementById("totalIncome").innerText = `+$${inc.toFixed(
+          2
+        )}`;
+        document.getElementById("totalExpense").innerText = `-$${exp.toFixed(
+          2
+        )}`;
+
+        const bPerc = Math.min((exp / appData.budgetLimit) * 100, 100);
+        document.getElementById("budgetBar").style.width = `${bPerc}%`;
+        document.getElementById("budgetPercentBadge").innerText = `${Math.round(
+          bPerc
+        )}% Gastado`;
+        document.getElementById("spentDisplay").innerText = `$${exp.toFixed(
+          0
+        )}`;
+        document.getElementById(
+          "limitDisplay"
+        ).innerText = `$${appData.budgetLimit}`;
+
+        // Render Goals
+        const gc = document.getElementById("goalsContainer");
+        const ng = document.getElementById("noGoalsState");
+        Array.from(gc.children).forEach(
+          (c) => c.id !== "noGoalsState" && gc.removeChild(c)
+        );
+
+        if (appData.goals.length > 0) {
+          ng.classList.add("hidden");
+          appData.goals.forEach((g) => {
+            const p = Math.min((g.saved / g.target) * 100, 100);
+            const el = document.createElement("div");
+            el.className =
+              "min-w-[160px] bg-white dark:bg-slate-800 p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 snap-center card-hover cursor-pointer";
+            el.onclick = () => openAddMoney(g.id);
+            el.innerHTML = `
+              <div class="flex justify-between mb-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs" style="background-color: ${
+                g.color
+              }"><i class="fa-solid ${
+              p >= 100 ? "fa-check" : "fa-bullseye"
+            }"></i></div><span class="text-xs font-bold text-slate-400">${Math.round(
+              p
+            )}%</span></div>
+              <h4 class="font-bold text-sm truncate dark:text-white">${
+                g.name
+              }</h4>
+              <p class="text-[11px] text-slate-400 mb-3">$${g.saved.toFixed(
+                0
+              )} / $${g.target.toFixed(0)}</p>
+              <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="h-full transition-all duration-700" style="width: ${p}%; background-color: ${
+              g.color
+            }"></div></div>
+            `;
+            gc.insertBefore(el, ng);
+          });
+        } else ng.classList.remove("hidden");
+
+        // Render Subscriptions
+        const subsList = document.getElementById("subsList");
+        const noSubs = document.getElementById("noSubsText");
+        let subsTotal = 0;
+        // Clean list
+        Array.from(subsList.children).forEach(
+          (c) => c.id !== "noSubsText" && subsList.removeChild(c)
+        );
+
+        if (appData.subscriptions && appData.subscriptions.length > 0) {
+          noSubs.classList.add("hidden");
+          appData.subscriptions.forEach((s) => {
+            subsTotal += s.cost;
+            const el = document.createElement("div");
+            el.className =
+              "flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900/50 rounded-2xl";
+            el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-brand-500 shadow-sm">
+                            <i class="fa-solid ${s.icon}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-slate-700 dark:text-slate-200">${s.name}</p>
+                            <p class="text-[10px] text-slate-400">Día ${s.day} de cada mes</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <p class="font-bold text-slate-800 dark:text-white">$${s.cost}</p>
+                        <button onclick="deleteSub(${s.id})" class="text-slate-300 hover:text-red-400 transition-colors">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            subsList.insertBefore(el, noSubs);
+          });
+        } else {
+          noSubs.classList.remove("hidden");
+        }
+        document.getElementById("subsTotal").innerText = `$${subsTotal.toFixed(
+          2
+        )}`;
+
+        const tl = document.getElementById("transactionList");
+        tl.innerHTML = "";
+        appData.transactions.slice(0, 20).forEach((t) => {
+          const el = document.createElement("div");
+          el.className =
+            "flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-50 dark:border-slate-700 shadow-sm";
+          el.innerHTML = `<div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background-color: ${
+            t.category.color
+          }"><i class="fa-solid ${
+            t.category.icon
+          }"></i></div><div><p class="font-bold text-sm dark:text-white">${
+            t.description
+          }</p><p class="text-xs text-slate-400">${new Date(
+            t.date
+          ).toLocaleDateString()}</p></div></div><p class="font-bold ${
+            t.type === "income" ? "text-emerald-500" : "dark:text-white"
+          }">${t.type === "income" ? "+" : "-"}$${t.amount.toFixed(2)}</p>`;
+          tl.appendChild(el);
+        });
+      }
+
+      window.onload = () => {
+        applyTheme();
+        checkSubscriptions();
+        renderApp();
+        renderCategories();
+      };
+    </script>
+  </body>
+</html>
