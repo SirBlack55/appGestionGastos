@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -5,7 +6,12 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Bloom Finance V2.6</title>
+    <!-- Meta tag para el color de la barra de estado (Notch) -->
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <title>M - App Gestión de Gastos</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -845,10 +851,13 @@
       }
 
       function applyTheme() {
+        const metaThemeColor = document.querySelector("meta[name=theme-color]");
         if (appData.darkMode) {
           document.documentElement.classList.add("dark");
+          if (metaThemeColor) metaThemeColor.setAttribute("content", "#0f172a");
         } else {
           document.documentElement.classList.remove("dark");
+          if (metaThemeColor) metaThemeColor.setAttribute("content", "#ffffff");
         }
       }
 
